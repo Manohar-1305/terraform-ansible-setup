@@ -1,0 +1,16 @@
+terraform init
+terraform plan
+terraform apply auto-approve
+ansible-playbook -i ansible_setup/ansible/inventories/inventory.ini ping.yaml --ssh-extra-args="-o StrictHostKeyChecking=no"
+
+
+ansible-playbook -i ansible/inventories/inventory.ini ping.yaml --limit ansible_client
+
+
+aws ec2 describe-images --region us-east-1 --owners 099720109477 --filters "Name=name,Values=ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-*" "Name=state,Values=available" --query "Images | sort_by(@,&CreationDate)[-1].{ID:ImageId,Name:Name}" --output table
+
+aws ec2 describe-instance-type-offerings --region ap-south-1 --location-type availability-zone --filters Name=instance-type,Values=t2.micro --query "InstanceTypeOfferings[].Location" --output table
+
+cloud-init query userdata
+
+cloud-init status --long
