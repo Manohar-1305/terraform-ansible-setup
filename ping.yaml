@@ -1,6 +1,6 @@
 ---
 - name: Ping all hosts
-  hosts: all
+  hosts: client
   gather_facts: no
   tasks:
     - name: Check connectivity
