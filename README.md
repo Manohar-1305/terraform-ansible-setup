@@ -31,7 +31,6 @@ Terraform creates the infrastructure required for the demonstration, while Ansib
 
 ## Architecture
 
-```text
                               AWS
                                |
                          +-----+------+
