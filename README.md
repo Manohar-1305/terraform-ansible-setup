@@ -132,31 +132,13 @@ Terraform and AWS Requirements
 | Client count | `1` |
 
 
-Infrastructure Components
-Component	Purpose
-VPC	Provides the isolated AWS network
-Internet Gateway	Provides internet connectivity for the public subnet
-Public Subnet	Hosts the Controller and Client EC2 instances
-Route Table	Defines network routing for the subnet
-Security Group	Controls inbound and outbound network traffic
-IAM Role	Provides AWS permissions to EC2
-IAM Policies	Define the AWS actions allowed to the EC2 instances
-IAM Instance Profile	Attaches the IAM role to EC2 instances
-Ansible Controller EC2	Runs Ansible automation
-Ansible Client EC2	Target system managed by Ansible
-Time Sleep	Provides a delay between Controller and Client creation
-Terraform and AWS Requirements
-Configuration	Value
-Terraform version	<= 1.6.6
-AWS provider	~> 5.0
-AWS Region	ap-south-1
-VPC CIDR	10.20.0.0/16
-Public Subnet CIDR	10.20.4.0/24
-Availability Zone	ap-south-1b
-Controller instance type	t2.micro
-Client instance type	t2.micro
-Client count	1
-VPC
+Public Subnet
+The subnet is configured to assign public IPv4 addresses to launched instances. Both the Controller and Client are placed in this subnet.
+Route Table
+The public route table contains a default route:
+Route Table
+The public route table contains a default route:
+0.0.0.0/0 -> Internet Gateway
 
 Terraform creates the VPC with the following CIDR:
 
