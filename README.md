@@ -18,46 +18,51 @@ Ansible	Connects to the servers and performs configuration and management tasks
 
 Terraform creates the infrastructure required for the demonstration, while Ansible is used after the infrastructure is available to connect to the target system and perform configuration tasks.
 
-The demonstration includes:
+## What This Repository Demonstrates
 
-AWS infrastructure provisioning
-Ansible Controller and Client creation
-SSH-based communication
-Dynamic inventory update
-Nginx installation and configuration
-QEMU Guest Agent installation and configuration
-Post-migration configuration automation
-Configuration verification
-Architecture
-                         AWS
-                          |
-                    +-----+------+
-                    |    VPC     |
-                    +-----+------+
-                          |
-                  +-------+-------+
-                  | Public Subnet |
-                  +-------+-------+
-                          |
-             +------------+------------+
-             |                         |
-             v                         v
-     +---------------+         +---------------+
-     | Ansible       |   SSH   | Ansible       |
-     | Controller    | ------> | Client        |
-     |               |         |               |
-     | Runs Ansible  |         | Target Server |
-     +---------------+         +---------------+
-             |
-             | Ansible
-             v
-      Server Configuration
-             |
-       +-----+------+
-       |            |
-       v            v
-     Nginx      QEMU Guest
-                Agent
+- **AWS infrastructure provisioning**
+- **Ansible Controller and Client creation**
+- **SSH-based communication**
+- **Dynamic inventory update**
+- **Nginx installation and configuration**
+- **QEMU Guest Agent installation and configuration**
+- **Post-migration configuration automation**
+- **Configuration verification**
+
+## Architecture
+
+```text
+                              AWS
+                               |
+                         +-----+------+
+                         |    VPC     |
+                         +-----+------+
+                               |
+                       +-------+-------+
+                       | Public Subnet|
+                       +-------+-------+
+                               |
+                  +------------+------------+
+                  |                         |
+                  v                         v
+          +---------------+         +---------------+
+          |   Ansible     |   SSH   |   Ansible     |
+          |   Controller  | ------> |     Client    |
+          |               |         |               |
+          | Runs Ansible  |         | Target Server |
+          +---------------+         +---------------+
+                  |
+                  | Ansible
+                  v
+          +----------------------+
+          | Server Configuration |
+          +----------+-----------+
+                     |
+               +-----+-----+
+               |           |
+               v           v
+             Nginx     QEMU Guest
+                        Agent
 
 The Ansible Client represents the Linux system on which post-provisioning or post-migration configuration tasks are performed.
 
