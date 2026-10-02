@@ -545,9 +545,9 @@ Creates the AWS infrastructure.
 
 
 ## Display Outputs
-bash
+```
 terraform output
-
+```
 
 Displays the Terraform outputs, including the Controller and Client public IP addresses.
 
@@ -555,9 +555,9 @@ Ansible Command
 
 After the Controller and Client are initialized, test Ansible connectivity with:
 
-bash
+```
 ansible-playbook -i ansible/inventories/inventory.ini ping.yaml
-
+```
 A successful result confirms that the Controller can connect to the Client through Ansible.
 
 Complete Workflow
