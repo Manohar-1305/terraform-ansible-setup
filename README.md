@@ -1,7 +1,6 @@
 # Terraform + Ansible Automation on AWS
 
 You can watch the video of implemntation or read the detailed blog
-## Resources
 
 ## Detailed Medium Blog
 
