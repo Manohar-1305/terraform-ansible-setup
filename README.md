@@ -459,21 +459,23 @@ Migration Reported as FAILED
 
 In a real environment, an administrator may manually:
 
+## Real-World Scenario
 In a real environment, an administrator may manually:
-
-Log in to the migrated VM.
-Install required packages.
-Configure the required services.
-Enable and start the services.
-Perform post-migration checks.
-Confirm that the VM passes validation.
-
+```
+| Step | Activity |
+|---:|---|
+| 1 | Log in to the migrated VM |
+| 2 | Install required packages |
+| 3 | Configure the required services |
+| 4 | Enable and start the services |
+| 5 | Perform post-migration checks |
+| 6 | Confirm that the VM passes validation |
+```
 This project demonstrates how that type of manual activity can be converted into Ansible automation.
 
-Deployment Workflow
-
+## Deployment Workflow
 The complete workflow is:
-
+```
 1. Clone Repository
         |
         v
@@ -511,6 +513,12 @@ The complete workflow is:
         |
         v
 13. Post-Migration Automation
+```
+## Terraform Commands
+Initialize Terraform
+```
+terraform init
+```
 Terraform Commands
 Initialize Terraform
 bash
@@ -518,27 +526,28 @@ terraform init
 
 Initializes the Terraform working directory and downloads the required provider.
 
-Validate Terraform
-bash
+##  Validate Terraform
+```
 terraform validate
-
+```
 Checks the Terraform configuration for syntax and configuration errors.
 
-Review the Plan
-bash
+## Review the Plan
+```
 terraform plan
-
+```
 Shows the infrastructure changes Terraform intends to make.
-
 Create Infrastructure
-bash
+```
 terraform apply
-
+```
 Creates the AWS infrastructure.
 
-Display Outputs
+
+## Display Outputs
 bash
 terraform output
+
 
 Displays the Terraform outputs, including the Controller and Client public IP addresses.
 
