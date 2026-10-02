@@ -355,12 +355,9 @@ ansible_client ansible_host=<CLIENT_IP>
 The Controller startup script dynamically updates the inventory with the instance information obtained from AWS.
 
 ping.yaml
-
 The ping.yaml playbook is used to verify Ansible connectivity to the Client.
-
-Example:
-
-yaml
+Example
+```
 ---
 - name: Ping all hosts
   hosts: client
@@ -368,28 +365,28 @@ yaml
   tasks:
     - name: Check connectivity
       ansible.builtin.ping:
+```
+| Verification | Purpose |
+|---|---|
+| Ansible | Ansible is installed on the Controller |
+| Inventory | The inventory contains the Client |
+| SSH Authentication | SSH authentication is working |
+| Connectivity | The Controller can reach the Client |
+| User | The `ansible-user` can be used for the connection |
 
-The playbook confirms that:
-
-Ansible is installed on the Controller.
-The inventory contains the Client.
-SSH authentication is working.
-The Controller can reach the Client.
-The ansible-user can be used for the connection.
 Nginx Configuration
-
 Nginx is used as a basic server-configuration example.
-
 The Ansible automation can be used to:
 
-Install Nginx
-Enable the Nginx service
-Start the Nginx service
-Validate the Nginx configuration
-Verify the service status
+| Task | Purpose |
+|---|---|
+| Install Nginx | Installs Nginx |
+| Enable the Nginx service | Enables the Nginx service |
+| Start the Nginx service | Starts the Nginx service |
+| Validate the Nginx configuration | Validates the Nginx configuration |
+| Verify the service status | Verifies the Nginx service status |
 
-The workflow is:
-
+```
 Ansible Controller
        |
        | SSH
@@ -400,19 +397,14 @@ Ansible Client
        +-- Enable service
        +-- Start service
        +-- Verify configuration
-
-This demonstrates a common Day-2 server configuration task.
-
+```
+## This demonstrates a common Day-2 server configuration task.
 QEMU Guest Agent
-
 The QEMU Guest Agent is relevant to the post-migration scenario demonstrated by this project.
-
 After a VM is migrated to a virtualization platform, required guest-side components may need to be installed or configured before post-migration checks can complete successfully.
-
 The QEMU Guest Agent provides a communication mechanism between a guest VM and its virtualization platform.
-
-The automation scenario is:
-
+Automation Scenario
+```
 Migrated VM
      |
      v
@@ -426,29 +418,25 @@ Checks Fail
      |
      v
 Migration Workflow Reported as FAILED
+```
+# Ansible Remediation
 
-Ansible can automate the remediation:
-
+```
 Ansible
    |
    +-- Install QEMU Guest Agent
    +-- Configure service
    +-- Enable required service
    +-- Verify configuration
+```
 Important Demonstration Limitation
-
 This repository does not perform an actual VMware-to-OpenShift Virtualization migration.
-
 The AWS EC2 environment is being used to reproduce the automation workflow.
-
 An EC2 instance is not the same as a VM running under QEMU/KVM with the expected VirtIO guest-agent communication channel. Therefore, the QEMU Guest Agent package can be installed on the EC2 test system, but the service may not operate in the same way as it would on a VM running under OpenShift Virtualization.
-
 The actual OpenShift Virtualization environment is outside the scope of this repository.
-
 Real-World Scenario
-
 The scenario being replicated is:
-
+```
 VMware VM
     |
     | VM Migration
@@ -467,6 +455,9 @@ Checks Fail
     |
     v
 Migration Reported as FAILED
+```
+
+In a real environment, an administrator may manually:
 
 In a real environment, an administrator may manually:
 
