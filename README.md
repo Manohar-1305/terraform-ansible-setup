@@ -7,11 +7,13 @@ You can watch the video of implemntation or read the detailed blog
 
 [Ansible Automation on AWS: Complete Setup, Nginx and QEMU Guest Agent](https://medium.com/@tradingcontentdrive/ansible-automation-on-aws-complete-setup-nginx-and-qemu-guest-agent-b3b927f4057b)
 
-### YouTube Video - Implementation
+## YouTube Video
 
-<a href="https://youtu.be/LYo2yOQ6OI4">
-  <img src="https://img.youtube.com/vi/LYo2yOQ6OI4/maxresdefault.jpg" alt="Watch the video" width="600">
+<a href="https://www.youtube.com/watch?v=LYo2yOQ6OI4">
+  <img src="https://i.ytimg.com/vi/LYo2yOQ6OI4/maxresdefault.jpg" width="800">
 </a>
+
+
 This repository demonstrates an end-to-end automation workflow using Terraform and Ansible on AWS.
 
 The project is designed to replicate a practical post-migration configuration scenario. The actual VMware-to-OpenShift Virtualization migration is outside the scope of this repository. Instead, AWS EC2 instances are used to reproduce the type of environment and configuration activities that may be required after a VM migration.
