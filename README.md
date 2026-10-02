@@ -52,7 +52,7 @@ Architecture
                 Agent
 The Ansible Client represents the Linux system on which post-provisioning or post-migration configuration tasks are performed.
 Repository Structure
-The repository currently contains:
+The repository contains the following files and directories:
 terraform-ansible-setup/
 │
 ├── ansible/
@@ -101,7 +101,6 @@ Time Sleep	Provides a delay between Controller and Client creation
 
 
 Terraform and AWS Requirements
-The Terraform configuration specifies:
 Configuration	Value
 Terraform version	<= 1.6.6
 AWS provider	~> 5.0
@@ -115,7 +114,7 @@ Client count	1
 
 
 VPC
-Terraform creates the VPC:
+Terraform creates the VPC with the following CIDR:
 10.20.0.0/16
 The VPC provides the isolated network in which the AWS resources are deployed.
 The EC2 instances are placed inside this VPC.
@@ -123,8 +122,8 @@ Internet Gateway
 The Internet Gateway provides a path between the VPC and the internet.
 The public route table uses the Internet Gateway as its default route:
 0.0.0.0/0
-       |
-       v
+     |
+     v
 Internet Gateway
 This allows the public subnet to communicate with the internet.
 Public Subnet
@@ -132,7 +131,7 @@ The public subnet uses:
 10.20.4.0/24
 and is configured in:
 ap-south-1b
-The subnet has public IPv4 address assignment enabled for launched instances.
+The subnet is configured to assign public IPv4 addresses to launched instances.
 Both the Controller and Client are placed in this subnet.
 Route Table
 The public route table contains a default route:
@@ -226,7 +225,6 @@ The Controller keeps the private key, while the Client receives the public key.
 Ansible uses the Controller's private key when connecting to the Client.
 Why S3 Is Used
 S3 is used as an intermediate location for transferring the Controller's public SSH key to the Client.
-The workflow is:
 Step	Action
 1	Controller generates an SSH key pair
 2	Controller uploads id_rsa.pub to S3
@@ -370,7 +368,7 @@ In a real environment, an administrator may manually:
 1. Log in to the migrated VM.
 2. Install required packages.
 3. Configure the required services.
-4. Enable/start the services.
+4. Enable and start the services.
 5. Perform post-migration checks.
 6. Confirm that the VM passes validation.
 This project demonstrates how that type of manual activity can be converted into Ansible automation.
