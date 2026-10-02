@@ -29,7 +29,6 @@ QEMU Guest Agent installation and configuration
 Post-migration configuration automation
 Configuration verification
 Architecture
-text
                          AWS
                           |
                     +-----+------+
@@ -66,7 +65,6 @@ Repository Structure
 
 The repository contains the following files and directories:
 
-text
 terraform-ansible-setup/
 │
 ├── ansible/
@@ -128,7 +126,6 @@ VPC
 
 Terraform creates the VPC with the following CIDR:
 
-text
 10.20.0.0/16
 
 The VPC provides the isolated network in which the AWS resources are deployed. The EC2 instances are placed inside this VPC.
@@ -139,7 +136,6 @@ The Internet Gateway provides a path between the VPC and the internet.
 
 The public route table uses the Internet Gateway as its default route:
 
-text
 0.0.0.0/0
      |
      v
@@ -151,12 +147,10 @@ Public Subnet
 
 The public subnet uses:
 
-text
 10.20.4.0/24
 
 and is configured in:
 
-text
 ap-south-1b
 
 The subnet is configured to assign public IPv4 addresses to launched instances. Both the Controller and Client are placed in this subnet.
@@ -165,7 +159,6 @@ Route Table
 
 The public route table contains a default route:
 
-text
 0.0.0.0/0 -> Internet Gateway
 
 This allows instances in the public subnet to send traffic to the internet through the Internet Gateway.
@@ -216,7 +209,6 @@ The IAM role is attached to EC2 through an IAM Instance Profile.
 
 The relationship is:
 
-text
 IAM Role
    |
    v
@@ -266,7 +258,6 @@ SSH Key Flow
 
 The SSH key exchange works as follows:
 
-text
 Ansible Controller
        |
        | Generate SSH key pair
@@ -309,7 +300,6 @@ The Terraform configuration intentionally creates the Controller before the Clie
 
 The dependency is:
 
-text
 Ansible Controller
         |
         v
@@ -339,7 +329,6 @@ Ansible Inventory
 
 The inventory is located at:
 
-text
 ansible/inventories/inventory.ini
 
 The inventory contains the Ansible host groups.
@@ -397,7 +386,6 @@ Verify the service status
 
 The workflow is:
 
-text
 Ansible Controller
        |
        | SSH
@@ -421,7 +409,6 @@ The QEMU Guest Agent provides a communication mechanism between a guest VM and i
 
 The automation scenario is:
 
-text
 Migrated VM
      |
      v
@@ -438,7 +425,6 @@ Migration Workflow Reported as FAILED
 
 Ansible can automate the remediation:
 
-text
 Ansible
    |
    +-- Install QEMU Guest Agent
@@ -459,7 +445,6 @@ Real-World Scenario
 
 The scenario being replicated is:
 
-text
 VMware VM
     |
     | VM Migration
@@ -494,7 +479,6 @@ Deployment Workflow
 
 The complete workflow is:
 
-text
 1. Clone Repository
         |
         v
@@ -576,7 +560,6 @@ Complete Workflow
 
 The complete project can be summarized as:
 
-text
                   Terraform
                       |
                       v
@@ -636,7 +619,6 @@ Security Note
 
 The repository contains:
 
-text
 testing-dev-1.pem
 
 A private SSH key should not be committed to a public Git repository.
