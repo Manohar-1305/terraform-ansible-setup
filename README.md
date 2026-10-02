@@ -9,7 +9,7 @@ You can watch the video of implemntation or read the detailed blog
 
 ### YouTube Video
 
-[![Terraform + Ansible Automation on AWS](https://img.youtube.com/vi/LYo2yOQ6OI4/maxresdefault.jpg)](https://www.youtube.com/watch?v=LYo2yOQ6OI4)
+[![Terraform + Ansible Automation on AWS](https://i.ytimg.com/vi/LYo2yOQ6OI4/hqdefault.jpg)](https://www.youtube.com/watch?v=LYo2yOQ6OI4)
 
 This repository demonstrates an end-to-end automation workflow using Terraform and Ansible on AWS.
 
