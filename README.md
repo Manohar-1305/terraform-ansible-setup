@@ -197,105 +197,111 @@ This allows EC2 to assume the role through AWS Security Token Service (STS).
 | `ec2:DescribeInstances` | Retrieve EC2 instance information |
 
 IAM Policies
-
 The project uses IAM permissions for the AWS operations performed by the automation.
-
-Permission	Purpose
-s3:PutObject	Upload the Controller public SSH key to S3
-s3:GetObject	Download the Controller public SSH key from S3
-s3:ListBucket	Access/list the S3 bucket
-ec2:DescribeInstances	Retrieve EC2 instance information
-
+| Permission | Purpose |
+|---|---|
+| `s3:PutObject` | Upload the Controller public SSH key to S3 |
+| `s3:GetObject` | Download the Controller public SSH key from S3 |
+| `s3:ListBucket` | Access/list the S3 bucket |
+| `ec2:DescribeInstances` | Retrieve EC2 instance information |
 The Controller uses the EC2 API to retrieve information such as the instance ID, Name tag, public IP address, and private IP address.
 
 IAM Instance Profile
-
 The IAM role is attached to EC2 through an IAM Instance Profile.
-
-The relationship is:
-
+```code
 IAM Role
-   |
-   v
+    |
+    v
 IAM Instance Profile
-   |
-   v
+    |
+    v
 EC2 Instance
-
+```
 This allows the EC2 instances to use the permissions of the IAM role without storing static AWS access keys on the servers.
-
 Ansible Controller
-
 The Ansible Controller is the system from which Ansible commands and playbooks are executed.
-
-The Controller user-data script:
-
-Creates the ansible-user.
-Configures sudo access.
-Installs required packages.
-Installs AWS CLI, Git, and Ansible.
-Creates an SSH key pair.
-Retrieves Controller EC2 information.
-Uploads the Controller public SSH key to S3.
-Clones the repository.
-Updates the Ansible inventory.
-Records setup activity in log files.
+The Controller user-data script performs the following tasks:
+| Task | Description |
+|---|---|
+| User creation | Creates the `ansible-user` |
+| Sudo configuration | Configures sudo access |
+| Package installation | Installs required packages |
+| AWS CLI | Installs AWS CLI |
+| Git | Installs Git |
+| Ansible | Installs Ansible |
+| SSH key generation | Creates an SSH key pair |
+| EC2 information | Retrieves Controller EC2 information |
+| S3 upload | Uploads the Controller public SSH key to S3 |
+| Repository | Clones the repository |
+| Inventory | Updates the Ansible inventory |
+| Logging | Records setup activity in log files |
 
 After initialization, the Controller is ready to execute Ansible automation against the Client.
-
-Ansible Client
-
+## Ansible Client
 The Ansible Client is the target system managed by Ansible.
-
-The Client user-data script:
-
-Creates the ansible-user.
-Configures sudo access.
-Waits for the Controller public key.
-Installs AWS CLI.
-Downloads the Controller public SSH key from S3.
-Places the key in authorized_keys.
-Configures the required SSH permissions.
+The Client user-data script performs the following tasks:
+| Task | Description |
+|---|---|
+| User creation | Creates the `ansible-user` |
+| Sudo configuration | Configures sudo access |
+| Startup wait | Waits for the Controller public key |
+| AWS CLI | Installs AWS CLI |
+| S3 download | Downloads the Controller public SSH key from S3 |
+| SSH configuration | Places the key in `authorized_keys` |
+| SSH permissions | Configures the required SSH permissions |
 
 The result is SSH authentication from the Controller to the Client.
-
-SSH Key Flow
-
+## SSH Key Flow
 The SSH key exchange works as follows:
-
+```
 Ansible Controller
-       |
-       | Generate SSH key pair
-       |
-       +---- id_rsa
-       |
-       +---- id_rsa.pub
-                  |
-                  | Upload
-                  v
-               S3 Bucket
-                  |
-                  | Download
-                  v
-            Ansible Client
-                  |
-                  v
-            authorized_keys
-
+        |
+        | Generate SSH key pair
+        |
+        +---- id_rsa
+        |
+        +---- id_rsa.pub
+                |
+                | Upload
+                v
+           S3 Bucket
+                |
+                | Download
+                v
+        Ansible Client
+                |
+                v
+        authorized_keys
+```
 The Controller keeps the private key, while the Client receives the public key.
-
 Ansible uses the Controller's private key when connecting to the Client.
 
 Why S3 Is Used
-
 S3 is used as an intermediate location for transferring the Controller's public SSH key to the Client.
-
 Step	Action
 1	Controller generates an SSH key pair
 2	Controller uploads id_rsa.pub to S3
 3	Client retrieves the public key from S3
-4	Client places the key in authorized_keys
+4	Client places the public key in authorized_keys
 5	Controller can connect to Client using SSH
+
+
+The EC2 instances use their IAM role permissions to access the required S3 objects.
+Controller and Client Creation Order
+The Terraform configuration intentionally creates the Controller before the Client.
+The dependency is:
+```
+Ansible Controller
+        |
+        v
+   90-second wait
+        |
+        v
+Ansible Client
+```
+The Controller also waits during its startup before looking up the Client information. The Client waits before downloading the Controller public SSH key.
+
+
 
 The EC2 instances use their IAM role permissions to access the required S3 objects.
 
