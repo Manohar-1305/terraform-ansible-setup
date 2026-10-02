@@ -142,36 +142,40 @@ echo "Controller public key uploaded successfully."
 # CLONE REPOSITORY AS ANSIBLE-USER HOME
 # ============================================================
 
-cd "$user_home"
+echo "Cloning terraform-ansible-setup repository..."
 
-echo "Current directory: $(pwd)"
+git clone \
+    "https://github.com/Manohar-1305/terraform-ansible-setup.git" \
+    "$user_home/terraform-ansible-setup"
 
-if [ -d "$user_home/ansible_setup/.git" ]; then
+if [ -d "$user_home/terraform-ansible-setup/.git" ]; then
 
-    echo "ansible_setup repository already exists."
+    echo "Repository cloned successfully. Continuing..."
 
 else
 
-    echo "Cloning ansible_setup repository..."
+    echo "WARNING: Repository clone verification failed. Retrying once..."
+
+    sleep 10
 
     git clone \
-        "https://github.com/Manohar-1305/ansible_setup.git" \
-        "$user_home/ansible_setup"
+        "https://github.com/Manohar-1305/terraform-ansible-setup.git" \
+        "$user_home/terraform-ansible-setup"
 
-    if [ $? -ne 0 ]; then
-        echo "ERROR: Git clone failed."
+    if [ -d "$user_home/terraform-ansible-setup/.git" ]; then
+        echo "Repository cloned successfully on retry. Continuing..."
+    else
+        echo "ERROR: Repository clone failed after retry."
         exit 1
     fi
 
 fi
 
-chown -R "$user_name:$user_name" "$user_home/ansible_setup"
-
 # ============================================================
 # INVENTORY
 # ============================================================
 
-INVENTORY_FILE="$user_home/ansible_setup/ansible/inventories/inventory.ini"
+INVENTORY_FILE="$user_home/terraform-ansible-setup/ansible/inventories/inventory.ini"
 
 echo "Inventory file:"
 echo "$INVENTORY_FILE"
@@ -340,10 +344,11 @@ echo "============================================================"
 echo "CONTROLLER SETUP COMPLETED"
 echo "============================================================"
 
-echo "Repository : $user_home/ansible_setup"
+echo "Repository : $user_home/terraform-ansible-setup"
 echo "Inventory  : $INVENTORY_FILE"
 echo "Controller : $ansible_controller"
 echo "Client     : $ansible_client_ip"
+echo "Bucket     : ${S3_KEY#s3://}"
 echo "Date       : $(date)"
 
 echo "============================================================"
