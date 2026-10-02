@@ -65,9 +65,10 @@ Terraform creates the infrastructure required for the demonstration, while Ansib
 
 The Ansible Client represents the Linux system on which post-provisioning or post-migration configuration tasks are performed.
 
-Repository Structure
+## Repository Structure
 
 The repository contains the following files and directories:
+
 
 terraform-ansible-setup/
 │
@@ -84,23 +85,11 @@ terraform-ansible-setup/
 ├── user-script-client.sh
 ├── user-script-controller.sh
 └── README.md
-File and Directory Overview
-File / Directory	Purpose
-main.tf	Main Terraform configuration containing AWS infrastructure resources, variables, dependencies, and outputs
-ansible.cfg	Ansible configuration used by the Controller
-ansible/inventories/inventory.ini	Ansible inventory containing the managed hosts
-ping.yaml	Ansible playbook used to test connectivity to the Client
-policy.json	IAM policy configuration used by the project
-steps.txt	Setup, deployment, and testing commands
-user-script-controller.sh	EC2 user-data script that prepares the Ansible Controller
-user-script-client.sh	EC2 user-data script that prepares the Ansible Client
-testing-dev-1.pem	EC2 SSH private key used for instance access
-README.md	Project documentation
-Terraform Configuration
 
 The main Terraform configuration is contained in main.tf.
 
 Terraform provisions the AWS infrastructure required for the demonstration.
+
 
 Infrastructure Components
 Component	Purpose
