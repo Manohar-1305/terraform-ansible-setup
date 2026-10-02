@@ -7,7 +7,7 @@ You can watch the video of implemntation or read the detailed blog
 [<img src="https://cdn.simpleicons.org/medium/000000" width="18"/> Ansible Automation on AWS: Complete Setup, Nginx and QEMU Guest Agent](https://medium.com/@tradingcontentdrive/ansible-automation-on-aws-complete-setup-nginx-and-qemu-guest-agent-b3b927f4057b)
 
 ## YouTube Video
-### Click on the Picture
+### Click on the Picture to play video
 
 [![Terraform and Ansible AWS Automation](./Terraform%20and%20Ansible%20AWS%20Automation.png)](https://www.youtube.com/watch?v=LYo2yOQ6OI4)
 
