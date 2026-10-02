@@ -1,4 +1,4 @@
-## Terraform + Ansible Automation on AWS
+# Terraform + Ansible Automation on AWS
 
 You can watch the video of implemntation or read the detailed blog
 ## Resources
@@ -8,7 +8,7 @@ You can watch the video of implemntation or read the detailed blog
 [Ansible Automation on AWS: Complete Setup, Nginx and QEMU Guest Agent](https://medium.com/@tradingcontentdrive/ansible-automation-on-aws-complete-setup-nginx-and-qemu-guest-agent-b3b927f4057b)
 
 ## YouTube Video
-# Click on the Picture
+### Click on the Picture
 
 [![Terraform and Ansible AWS Automation](./Terraform%20and%20Ansible%20AWS%20Automation.png)](https://www.youtube.com/watch?v=LYo2yOQ6OI4)
 
