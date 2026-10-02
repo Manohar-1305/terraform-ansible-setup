@@ -69,7 +69,7 @@ The Ansible Client represents the Linux system on which post-provisioning or pos
 
 The repository contains the following files and directories:
 
-
+```text
 terraform-ansible-setup/
 │
 ├── ansible/
@@ -86,10 +86,23 @@ terraform-ansible-setup/
 ├── user-script-controller.sh
 └── README.md
 
-The main Terraform configuration is contained in main.tf.
+File and Directory Overview
+File / Directory	Purpose
+main.tf	Main Terraform configuration containing AWS infrastructure resources, variables, dependencies, and outputs.
+ansible.cfg	Ansible configuration used by the Controller.
+ansible/inventories/inventory.ini	Ansible inventory containing the managed hosts.
+ping.yaml	Ansible playbook used to test connectivity to the Client.
+policy.json	IAM policy configuration used by the project.
+steps.txt	Setup, deployment, and testing commands.
+user-script-controller.sh	EC2 user-data script that prepares the Ansible Controller.
+user-script-client.sh	EC2 user-data script that prepares the Ansible Client.
+testing-dev-1.pem	EC2 SSH private key used for instance access.
+README.md	Project documentation.
 
-Terraform provisions the AWS infrastructure required for the demonstration.
 
+Terraform Configuration
+The Terraform configuration provisions the AWS infrastructure required for the Ansible automation environment.
+```
 
 Infrastructure Components
 Component	Purpose
