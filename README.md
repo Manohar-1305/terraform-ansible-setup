@@ -1,30 +1,25 @@
 Terraform + Ansible Automation on AWS
-This repository demonstrates an end-to-end automation workflow using
-Terraform for AWS infrastructure provisioning and Ansible for
-server configuration and post-provisioning automation.
-The project is designed to replicate a practical post-migration
-configuration scenario. The actual VMware-to-OpenShift Virtualization
-migration is outside the scope of this repository. Instead, an AWS EC2
-environment is used to represent the infrastructure and the type of
-manual configuration that may be required after a VM migration.
+This repository demonstrates an end-to-end automation workflow using Terraform and Ansible on AWS.
+The project is designed to replicate a practical post-migration configuration scenario. The actual VMware-to-OpenShift Virtualization migration is outside the scope of this repository. Instead, AWS EC2 instances are used to reproduce the type of environment and configuration activities that may be required after a VM migration.
+One example is a migrated Linux VM where the QEMU Guest Agent is missing or not configured correctly. If required post-migration checks fail, the overall migration workflow can ultimately be reported as failed.
+This repository demonstrates how such manual post-migration configuration activities can be converted into repeatable Ansible automation.
 Project Objective
-In a real VM migration workflow, a VM can be successfully migrated but
-still fail post-migration checks because required guest-side
-configuration is missing.
-One example is a migrated Linux VM where the QEMU Guest Agent is not
-installed or configured correctly. If required post-migration checks
-fail, the migration workflow can ultimately be reported as failed.
-This repository demonstrates how such manual post-migration
-configuration can be converted into repeatable Ansible automation.
-The demonstration covers:
-- Provisioning AWS infrastructure with Terraform
-- Creating an Ansible Controller and Client
-- Configuring SSH connectivity between Controller and Client
-- Dynamically updating the Ansible inventory
-- Installing and configuring Nginx
-- Installing and configuring the QEMU Guest Agent
-- Verifying configuration
-- Separating infrastructure provisioning from server configuration
+The main objective is to demonstrate the separation between infrastructure provisioning and server configuration.
+Tool	Responsibility
+Terraform	Provisions and manages the AWS infrastructure
+Ansible	Connects to the servers and performs configuration and management tasks
+
+
+Terraform creates the infrastructure required for the demonstration, while Ansible is used after the infrastructure is available to connect to the target system and perform configuration tasks.
+The demonstration includes:
+- AWS infrastructure provisioning
+- Ansible Controller and Client creation
+- SSH-based communication
+- Dynamic inventory update
+- Nginx installation and configuration
+- QEMU Guest Agent installation and configuration
+- Post-migration configuration automation
+- Configuration verification
 Architecture
                          AWS
                           |
@@ -43,215 +38,326 @@ Architecture
      | Ansible       |   SSH   | Ansible       |
      | Controller    | ------> | Client        |
      |               |         |               |
-     | Terraform     |         | Represents    |
-     | Ansible       |         | migrated VM   |
+     | Runs Ansible  |         | Target Server |
      +---------------+         +---------------+
              |
              | Ansible
              v
-       +----------------------+
-       | Server Configuration |
-       +----------------------+
-       | Nginx                |
-       | QEMU Guest Agent     |
-       | Verification         |
-       +----------------------+
-Terraform and Ansible Responsibilities
-Terraform
-Terraform handles the infrastructure layer.
-It provisions:
-- VPC
-- Internet Gateway
-- Public Subnet
-- Route Table
-- Security Group
-- IAM Role
-- IAM Policies
-- IAM Instance Profile
-- Ansible Controller EC2 instance
-- Ansible Client EC2 instance
-Terraform also controls the dependency between the Controller and Client
-so that the Controller is created before the Client.
-Ansible
-Ansible handles the configuration and management layer.
-It connects to the Client over SSH and performs tasks such as:
-- Installing packages
-- Configuring services
-- Installing Nginx
-- Installing QEMU Guest Agent
-- Enabling required services
-- Performing configuration checks
-The separation is:
-Terraform  -> Infrastructure provisioning
-Ansible    -> Server configuration and management
+      Server Configuration
+             |
+       +-----+------+
+       |            |
+       v            v
+     Nginx      QEMU Guest
+                Agent
+The Ansible Client represents the Linux system on which post-provisioning or post-migration configuration tasks are performed.
 Repository Structure
+The repository currently contains:
 terraform-ansible-setup/
-|
-+-- terraform/
-|   |
-|   +-- main.tf
-|   +-- variables.tf
-|   +-- outputs.tf
-|   +-- ...
-|
-+-- ansible/
-|   |
-|   +-- ansible.cfg
-|   |
-|   +-- inventories/
-|   |   +-- inventory.ini
-|   |
-|   +-- playbooks/
-|       +-- ping.yml
-|       +-- nginx.yml
-|       +-- qemu.yml
-|       +-- ...
-|
-+-- user-script-controller.sh
-+-- user-script-client.sh
-+-- README.md
-The exact filenames and directory layout should match the files
-currently present in the repository.
+│
+├── ansible/
+│   └── inventories/
+│       └── inventory.ini
+│
+├── ansible.cfg
+├── main.tf
+├── ping.yaml
+├── policy.json
+├── steps.txt
+├── testing-dev-1.pem
+├── user-script-client.sh
+├── user-script-controller.sh
+└── README.md
+File and Directory Overview
+File / Directory	Purpose
+main.tf	Main Terraform configuration containing AWS infrastructure resources, variables, dependencies, and outputs
+ansible.cfg	Ansible configuration used by the Controller
+ansible/inventories/inventory.ini	Ansible inventory containing the managed hosts
+ping.yaml	Ansible playbook used to test connectivity to the Client
+policy.json	IAM policy configuration used by the project
+steps.txt	Setup, deployment, and testing commands
+user-script-controller.sh	EC2 user-data script that prepares the Ansible Controller
+user-script-client.sh	EC2 user-data script that prepares the Ansible Client
+testing-dev-1.pem	EC2 SSH private key used for instance access
+README.md	Project documentation
+
 
 Terraform Configuration
-The Terraform configuration defines the AWS environment.
-The main infrastructure components are:
+The main Terraform configuration is contained in main.tf.
+Terraform provisions the AWS infrastructure required for the demonstration.
+Infrastructure Components
+Component	Purpose
+VPC	Provides the isolated AWS network
+Internet Gateway	Provides internet connectivity for the public subnet
+Public Subnet	Hosts the Controller and Client EC2 instances
+Route Table	Defines network routing for the subnet
+Security Group	Controls inbound and outbound network traffic
+IAM Role	Provides AWS permissions to EC2
+IAM Policies	Define the AWS actions allowed to the EC2 instances
+IAM Instance Profile	Attaches the IAM role to EC2 instances
+Ansible Controller EC2	Runs Ansible automation
+Ansible Client EC2	Target system managed by Ansible
+Time Sleep	Provides a delay between Controller and Client creation
+
+
+Terraform and AWS Requirements
+The Terraform configuration specifies:
+Configuration	Value
+Terraform version	<= 1.6.6
+AWS provider	~> 5.0
+AWS Region	ap-south-1
+VPC CIDR	10.20.0.0/16
+Public Subnet CIDR	10.20.4.0/24
+Availability Zone	ap-south-1b
+Controller instance type	t2.micro
+Client instance type	t2.micro
+Client count	1
+
+
 VPC
-Creates the isolated AWS network:
+Terraform creates the VPC:
 10.20.0.0/16
-Public Subnet
-The EC2 instances are placed in the public subnet:
-10.20.4.0/24
-The subnet is configured to automatically assign public IPv4 addresses
-to instances.
+The VPC provides the isolated network in which the AWS resources are deployed.
+The EC2 instances are placed inside this VPC.
 Internet Gateway
-Provides internet connectivity between the VPC and the internet.
+The Internet Gateway provides a path between the VPC and the internet.
+The public route table uses the Internet Gateway as its default route:
+0.0.0.0/0
+       |
+       v
+Internet Gateway
+This allows the public subnet to communicate with the internet.
+Public Subnet
+The public subnet uses:
+10.20.4.0/24
+and is configured in:
+ap-south-1b
+The subnet has public IPv4 address assignment enabled for launched instances.
+Both the Controller and Client are placed in this subnet.
 Route Table
 The public route table contains a default route:
 0.0.0.0/0 -> Internet Gateway
+This allows instances in the public subnet to send traffic to the internet through the Internet Gateway.
 Security Group
-The security group allows:
-TCP 22   SSH
-TCP 80   HTTP
-TCP 443  HTTPS
-It also allows outbound IPv4 traffic.
-IAM Role and Instance Profile
-The EC2 instances receive an IAM role through an instance profile.
-The role provides permissions required by the automation, including:
-- S3 object access
-- EC2 instance information lookup
-This allows the instances to use temporary AWS credentials instead of
-storing AWS access keys on the servers.
-Controller and Client
+The security group acts as the virtual firewall for the EC2 instances.
+Port	Protocol	Purpose
+22	TCP	SSH and Ansible connectivity
+80	TCP	HTTP / Nginx
+443	TCP	HTTPS
+
+
+Outbound IPv4 traffic is allowed.
+SSH is required for the Ansible Controller to connect to the Client.
+IAM Role
+The EC2 instances receive an IAM role.
+The role trusts the EC2 service:
+Principal = {
+  Service = "ec2.amazonaws.com"
+}
+This allows EC2 to assume the role through AWS Security Token Service.
+The role provides the AWS permissions required by the automation.
+IAM Policies
+The project uses IAM permissions for the AWS operations performed by the automation.
+Permission	Purpose
+s3:PutObject	Upload the Controller public SSH key to S3
+s3:GetObject	Download the Controller public SSH key from S3
+s3:ListBucket	Access/list the S3 bucket
+ec2:DescribeInstances	Retrieve EC2 instance information
+
+
+The Controller uses the EC2 API to retrieve information such as the instance ID, Name tag, public IP address, and private IP address.
+IAM Instance Profile
+The IAM role is attached to EC2 through an IAM Instance Profile.
+The relationship is:
+IAM Role
+   |
+   v
+IAM Instance Profile
+   |
+   v
+EC2 Instance
+This allows the EC2 instances to use the permissions of the IAM role without storing static AWS access keys on the servers.
 Ansible Controller
-The Controller is the system from which Ansible is executed.
-During first boot, the Controller user-data script:
-1. Creates ansible-user
-2. Configures passwordless sudo
-3. Installs AWS CLI, Git and Ansible
-4. Generates an SSH key pair
-5. Retrieves its EC2 instance information
-6. Uploads its public SSH key to S3
-7. Clones the Ansible/Terraform repository
-8. Updates the Ansible inventory with the Controller and Client
-   addresses
+The Ansible Controller is the system from which Ansible commands and playbooks are executed.
+The Controller user-data script:
+1. Creates the ansible-user.
+2. Configures sudo access.
+3. Installs required packages.
+4. Installs AWS CLI, Git, and Ansible.
+5. Creates an SSH key pair.
+6. Retrieves Controller EC2 information.
+7. Uploads the Controller public SSH key to S3.
+8. Clones the repository.
+9. Updates the Ansible inventory.
+10. Records setup activity in log files.
+After initialization, the Controller is ready to execute Ansible automation against the Client.
 Ansible Client
-The Client represents the server that Ansible manages.
-During first boot, the Client user-data script:
-1. Creates ansible-user
-2. Configures passwordless sudo
-3. Installs AWS CLI
-4. Downloads the Controller public SSH key from S3
-5. Places the key in authorized_keys
-6. Configures SSH permissions
-This establishes passwordless SSH authentication from the Controller to
-the Client.
+The Ansible Client is the target system managed by Ansible.
+The Client user-data script:
+1. Creates the ansible-user.
+2. Configures sudo access.
+3. Waits for the Controller public key.
+4. Installs AWS CLI.
+5. Downloads the Controller public SSH key from S3.
+6. Places the key in authorized_keys.
+7. Configures the required SSH permissions.
+The result is SSH authentication from the Controller to the Client.
 SSH Key Flow
-The SSH authentication flow is:
-Controller
-    |
-    | Generate SSH key pair
-    |
-    +---- id_rsa
-    |
-    +---- id_rsa.pub
-             |
-             | Upload
-             v
-        S3 Bucket
-             |
-             | Download
-             v
-          Client
-             |
-             v
-      authorized_keys
-Ansible then uses the Controller's private key to connect to the Client.
+The SSH key exchange works as follows:
+Ansible Controller
+       |
+       | Generate SSH key pair
+       |
+       +---- id_rsa
+       |
+       +---- id_rsa.pub
+                  |
+                  | Upload
+                  v
+               S3 Bucket
+                  |
+                  | Download
+                  v
+            Ansible Client
+                  |
+                  v
+            authorized_keys
+The Controller keeps the private key, while the Client receives the public key.
+Ansible uses the Controller's private key when connecting to the Client.
+Why S3 Is Used
+S3 is used as an intermediate location for transferring the Controller's public SSH key to the Client.
+The workflow is:
+Step	Action
+1	Controller generates an SSH key pair
+2	Controller uploads id_rsa.pub to S3
+3	Client retrieves the public key from S3
+4	Client places the key in authorized_keys
+5	Controller can connect to Client using SSH
+
+
+The EC2 instances use their IAM role permissions to access the required S3 objects.
+Controller and Client Creation Order
+The Terraform configuration intentionally creates the Controller before the Client.
+The dependency is:
+Ansible Controller
+        |
+        v
+90-second wait
+        |
+        v
+Ansible Client
+The Controller also waits during its startup before looking up the Client information.
+The Client waits before downloading the Controller public SSH key.
+These delays provide a startup buffer so that the Controller has time to initialize and upload its public key before the Client attempts to retrieve it.
 Ansible Configuration
-The repository uses an Ansible configuration similar to:
+The ansible.cfg file contains the Ansible configuration used by the Controller.
 [defaults]
 private_key_file = /home/ansible-user/.ssh/id_rsa
 remote_user = ansible-user
 host_key_checking = False
-This defines the SSH private key, remote Linux user, and host-key
-checking behavior used by Ansible.
-Inventory
-The inventory contains the Controller and Client groups:
+Setting	Purpose
+private_key_file	Specifies the SSH private key Ansible uses
+remote_user	Specifies the Linux user used for SSH
+host_key_checking	Controls SSH host-key verification prompts
+
+
+Ansible Inventory
+The inventory is located at:
+ansible/inventories/inventory.ini
+The inventory contains the Ansible host groups.
+Example:
 [controller]
 ansible_controller ansible_host=<CONTROLLER_IP>
 
 [client]
 ansible_client ansible_host=<CLIENT_IP>
-The Client group is used by the configuration playbooks.
-Example Ansible Operations
-Connectivity Test
-The ping playbook verifies that Ansible can connect to the Client.
+Inventory Item	Purpose
+[controller]	Controller host group
+[client]	Client host group
+ansible_controller	Ansible inventory hostname
+ansible_client	Ansible inventory hostname
+ansible_host	Actual IP address used for the connection
+
+
+The Controller startup script dynamically updates the inventory with the instance information obtained from AWS.
+ping.yaml
+The ping.yaml playbook is used to verify Ansible connectivity to the Client.
+Example:
+---
 - name: Ping all hosts
   hosts: client
   gather_facts: no
-
   tasks:
     - name: Check connectivity
       ansible.builtin.ping:
-Nginx
-The Nginx playbook demonstrates a normal server configuration task.
-It:
-- Installs Nginx
-- Enables the Nginx service
-- Starts the service
-- Tests the Nginx configuration
-- Checks the service state
+The playbook confirms that:
+- Ansible is installed on the Controller.
+- The inventory contains the Client.
+- SSH authentication is working.
+- The Controller can reach the Client.
+- The ansible-user can be used for the connection.
+Nginx Configuration
+Nginx is used as a basic server-configuration example.
+The Ansible automation can be used to:
+- Install Nginx
+- Enable the Nginx service
+- Start the Nginx service
+- Validate the Nginx configuration
+- Verify the service status
+The workflow is:
+Ansible Controller
+       |
+       | SSH
+       v
+Ansible Client
+       |
+       +-- Install Nginx
+       +-- Enable service
+       +-- Start service
+       +-- Verify configuration
+This demonstrates a common Day-2 server configuration task.
 QEMU Guest Agent
-The QEMU playbook represents a post-migration configuration task.
-It:
-- Determines the Ubuntu version
-- Changes the root password
-- Enables the Ubuntu Universe repository
-- Updates the package cache
-- Installs QEMU/KVM-related packages
-- Installs qemu-guest-agent
-- Attempts to enable the QEMU Guest Agent service
-- Verifies the service state
-The QEMU Guest Agent is relevant to the migration scenario because it
-provides a communication mechanism between a guest VM and its
-virtualization platform.
-Real-World Scenario Being Replicated
-The repository does not perform an actual VMware-to-OpenShift
-Virtualization migration.
-Instead, it replicates the type of post-migration remediation that
-may be required.
-The scenario is:
+The QEMU Guest Agent is relevant to the post-migration scenario demonstrated by this project.
+After a VM is migrated to a virtualization platform, required guest-side components may need to be installed or configured before post-migration checks can complete successfully.
+The QEMU Guest Agent provides a communication mechanism between a guest VM and its virtualization platform.
+The automation scenario is:
+Migrated VM
+     |
+     v
+QEMU Guest Agent missing / not configured
+     |
+     v
+Post-Migration Checks
+     |
+     v
+Checks Fail
+     |
+     v
+Migration Workflow Reported as FAILED
+Ansible can automate the remediation:
+Ansible
+   |
+   +-- Install QEMU Guest Agent
+   +-- Configure service
+   +-- Enable required service
+   +-- Verify configuration
+Important Demonstration Limitation
+This repository does not perform an actual VMware-to-OpenShift Virtualization migration.
+The AWS EC2 environment is being used to reproduce the automation workflow.
+An EC2 instance is not the same as a VM running under QEMU/KVM with the expected VirtIO guest-agent communication channel. Therefore, the QEMU Guest Agent package can be installed on the EC2 test system, but the service may not operate in the same way as it would on a VM running under OpenShift Virtualization.
+The actual OpenShift Virtualization environment is outside the scope of this repository.
+Real-World Scenario
+The scenario being replicated is:
 VMware VM
     |
-    | Migration
+    | VM Migration
     v
 OpenShift Virtualization
     |
     v
 Migrated VM
     |
-    +-- QEMU Guest Agent missing/not configured
-    |
+    | Required configuration missing
     v
 Post-Migration Checks
     |
@@ -259,104 +365,148 @@ Post-Migration Checks
 Checks Fail
     |
     v
-Migration Workflow Reported as FAILED
-The manual remediation can then be represented by:
-Ansible
-   |
-   +-- Connect to VM
-   +-- Install required packages
-   +-- Configure QEMU Guest Agent
-   +-- Enable required service
-   +-- Verify configuration
-The purpose of the demonstration is to show how this type of manual
-activity can be automated and repeated consistently.
+Migration Reported as FAILED
+In a real environment, an administrator may manually:
+1. Log in to the migrated VM.
+2. Install required packages.
+3. Configure the required services.
+4. Enable/start the services.
+5. Perform post-migration checks.
+6. Confirm that the VM passes validation.
+This project demonstrates how that type of manual activity can be converted into Ansible automation.
 Deployment Workflow
-1. Initialize Terraform
+The complete workflow is:
+1. Clone Repository
+        |
+        v
+2. terraform init
+        |
+        v
+3. terraform validate
+        |
+        v
+4. terraform plan
+        |
+        v
+5. terraform apply
+        |
+        v
+6. AWS Infrastructure Created
+        |
+        v
+7. Controller Initialized
+        |
+        v
+8. Client Initialized
+        |
+        v
+9. SSH Key Exchange
+        |
+        v
+10. Inventory Updated
+        |
+        v
+11. Ansible Connectivity Test
+        |
+        v
+12. Server Configuration
+        |
+        v
+13. Post-Migration Automation
+Terraform Commands
+Initialize Terraform
 terraform init
-Downloads and initializes the required Terraform providers.
-2. Validate Configuration
+Initializes the Terraform working directory and downloads the required provider.
+Validate Terraform
 terraform validate
 Checks the Terraform configuration for syntax and configuration errors.
-3. Review the Plan
+Review the Plan
 terraform plan
 Shows the infrastructure changes Terraform intends to make.
-4. Create Infrastructure
+Create Infrastructure
 terraform apply
 Creates the AWS infrastructure.
-5. Get Instance IP Addresses
+Display Outputs
 terraform output
-Displays the Terraform outputs, including the Controller and Client
-public IP addresses.
-6. Connect to the Controller
-After the Controller has completed its user-data initialization, connect
-to the Controller and use the configured Ansible environment.
-7. Run Ansible
-For example:
-ansible-playbook -i ansible/inventories/inventory.ini ansible/playbooks/ping.yml
-Then execute the required configuration playbooks.
-Terraform Dependency Flow
-The project intentionally creates the Controller before the Client.
-Controller EC2
-      |
-      v
-90-second Terraform wait
-      |
-      v
-Client EC2
-The Controller also waits during its startup before looking up the
-Client address, while the Client waits before downloading the
-Controller's public SSH key.
-These delays provide a startup buffer for the SSH key exchange and
-inventory configuration.
-Important Note About QEMU Guest Agent on AWS
-This AWS environment is being used to demonstrate the automation
-workflow.
-An EC2 instance is not the same as a VM running under QEMU/KVM with the
-expected VirtIO guest-agent communication channel. Therefore, the QEMU
-Guest Agent package can be installed on the test system while the
-service may not operate normally because the required virtualization
-channel is not provided by the EC2 environment.
-This is a limitation of the demonstration environment and does not
-represent the complete behavior of a VM running under OpenShift
-Virtualization.
-Learning Objectives
-After completing this repository, you should understand:
-- How Terraform provisions AWS infrastructure
-- How Terraform resources depend on one another
-- How IAM roles and instance profiles provide permissions to EC2
-- How EC2 instances can use AWS APIs without static credentials
-- How Ansible connects to remote Linux systems
-- How SSH keys can be automated
-- How dynamic inventory information can be retrieved from AWS
-- How Ansible playbooks configure servers
-- How post-migration activities can be automated
-- How Terraform and Ansible can be used together
-Related Learning
-For more advanced Ansible automation on OpenShift and Kubernetes, see:
-- Deploying Ansible Automation Platform on
-  OpenShift
-- Executing Ansible Jobs using AAP on
-  OpenShift
-- Deploying Ansible Tower/AWX on Kubernetes with AWX
-  Operator
-Blog
-A detailed explanation of this demonstration is available here:
-Ansible Automation on AWS: Complete Setup, Nginx and QEMU Guest
-Agent
-Technologies Used
-- AWS
-- Terraform
-- Ansible
-- EC2
-- IAM
-- VPC
-- S3
-- SSH
-- Nginx
-- QEMU Guest Agent
-- Linux
+Displays the Terraform outputs, including the Controller and Client public IP addresses.
+Ansible Command
+After the Controller and Client are initialized, test Ansible connectivity with:
+ansible-playbook -i ansible/inventories/inventory.ini ping.yaml
+A successful result confirms that the Controller can connect to the Client through Ansible.
+Complete Workflow
+The complete project can be summarized as:
+                  Terraform
+                      |
+                      v
+              AWS Infrastructure
+                      |
+          +-----------+-----------+
+          |                       |
+          v                       v
+   Ansible Controller      Ansible Client
+          |                       ^
+          |                       |
+          +-------- SSH ---------+
+          |
+          v
+       Ansible
+          |
+     +----+----+
+     |         |
+     v         v
+   Nginx     QEMU
+            Guest Agent
+               |
+               v
+       Configuration
+        Verification
+Why Terraform and Ansible Together?
+Terraform and Ansible solve different parts of the automation workflow.
+Terraform	Ansible
+Infrastructure as Code	Configuration Management
+Creates AWS resources	Configures existing servers
+Creates VPC and networking	Installs packages
+Creates IAM resources	Manages services
+Creates EC2 instances	Performs server configuration
+Defines infrastructure dependencies	Performs Day-2 operations
+Manages infrastructure state	Executes configuration tasks
+
+
+The project therefore follows:
+Terraform → Provision the infrastructure
+Ansible → Configure and manage the servers
+Main Technologies
+Technology	Role in the Project
+AWS	Cloud infrastructure platform
+Terraform	Infrastructure provisioning
+Ansible	Server configuration and automation
+Amazon EC2	Controller and Client instances
+Amazon VPC	Network environment
+IAM	AWS permissions
+Amazon S3	SSH public-key transfer
+SSH	Controller-to-Client communication
+Nginx	Server configuration example
+QEMU Guest Agent	Post-migration configuration example
+Linux	Operating system environment
+
+
+Security Note
+The repository contains:
+testing-dev-1.pem
+A private SSH key should not be committed to a public Git repository.
+For a production or publicly shared repository, use an appropriate secret-management approach and keep private credentials outside version control.
+Related Blog
+The detailed explanation and walkthrough for this project are available here:
+Ansible Automation on AWS: Complete Setup, Nginx and QEMU Guest Agent
+https://medium.com/@tradingcontentdrive/ansible-automation-on-aws-complete-setup-nginx-and-qemu-guest-agent-b3b927f4057b
+Further Learning
+Ansible Automation Platform on OpenShift
+https://medium.com/devops-cloud-engineering-hub/deploying-ansible-automation-platform-on-openshift-19bcbb31a9d0
+Executing Ansible Jobs using AAP on OpenShift
+https://medium.com/devops-cloud-engineering-hub/executing-ansible-jobs-using-aap-on-openshift-dbcd9994eaa3
+Ansible Tower / AWX on Kubernetes
+https://medium.com/devops-cloud-engineering-hub/deploying-ansible-tower-awx-on-kubernetes-with-awx-operator-linux-server-automation-and-job-b3d00aa8fa74
 Disclaimer
-This repository is a demonstration and learning environment. The
-VMware-to-OpenShift Virtualization migration itself is not performed
-here. The AWS environment is used to reproduce and automate
-representative post-migration configuration tasks.
+This repository is a demonstration and learning environment.
+The VMware-to-OpenShift Virtualization migration itself is not performed by this repository. The AWS environment is used to reproduce and automate representative configuration activities that may be required after VM migration.
+The focus is on demonstrating how Terraform can provision the environment and Ansible can automate server-side and post-migration configuration tasks.
