@@ -131,81 +131,70 @@ Terraform and AWS Requirements
 | Client instance type | `t2.micro` |
 | Client count | `1` |
 
-
-Public Subnet
-The subnet is configured to assign public IPv4 addresses to launched instances. Both the Controller and Client are placed in this subnet.
-Route Table
-The public route table contains a default route:
-Route Table
-The public route table contains a default route:
-0.0.0.0/0 -> Internet Gateway
-
-Terraform creates the VPC with the following CIDR:
-
-10.20.0.0/16
-
-The VPC provides the isolated network in which the AWS resources are deployed. The EC2 instances are placed inside this VPC.
+VPC
+| Configuration | Value |
+|---|---|
+| CIDR | `10.20.0.0/16` |
+| Purpose | Provides the isolated network in which the AWS resources are deployed |
+| Resources | EC2 Controller and Client |
 
 Internet Gateway
-
-The Internet Gateway provides a path between the VPC and the internet.
-
-The public route table uses the Internet Gateway as its default route:
-
-0.0.0.0/0
-     |
-     v
-Internet Gateway
-
-This allows the public subnet to communicate with the internet.
+| Configuration | Value |
+|---|---|
+| Purpose | Provides a path between the VPC and the internet |
+| Default Route | `0.0.0.0/0` |
+| Target | Internet Gateway |
+| Effect | Allows the public subnet to communicate with the internet |
 
 Public Subnet
-
-The public subnet uses:
-
-10.20.4.0/24
-
-and is configured in:
-
-ap-south-1b
-
-The subnet is configured to assign public IPv4 addresses to launched instances. Both the Controller and Client are placed in this subnet.
+| Configuration | Value |
+|---|---|
+| CIDR | `10.20.4.0/24` |
+| Availability Zone | `ap-south-1b` |
+| Public IPv4 | Enabled |
+| Resources | Ansible Controller and Ansible Client |
+The subnet is configured to assign public IPv4 addresses to launched instances.
 
 Route Table
-
-The public route table contains a default route:
-
-0.0.0.0/0 -> Internet Gateway
-
-This allows instances in the public subnet to send traffic to the internet through the Internet Gateway.
+| Configuration | Value |
+|---|---|
+| Route | `0.0.0.0/0` |
+| Target | Internet Gateway |
+| Purpose | Allows instances in the public subnet to send traffic to the internet |
 
 Security Group
-
 The security group acts as the virtual firewall for the EC2 instances.
+| Port | Protocol | Purpose |
+|---:|:---:|---|
+| 22 | TCP | SSH and Ansible connectivity |
+| 80 | TCP | HTTP / Nginx |
+| 443 | TCP | HTTPS |
 
-Port	Protocol	Purpose
-22	TCP	SSH and Ansible connectivity
-80	TCP	HTTP / Nginx
-443	TCP	HTTPS
-
-Outbound IPv4 traffic is allowed.
-
-SSH is required for the Ansible Controller to connect to the Client.
+| Traffic | Configuration |
+|---|---|
+| Inbound | Ports 22, 80, and 443 |
+| Outbound | IPv4 traffic allowed |
+| SSH | Required for the Ansible Controller to connect to the Client |
 
 IAM Role
-
-The EC2 instances receive an IAM role.
+| Configuration | Value |
+|---|---|
+| Trusted Service | EC2 |
+| Purpose | Provides AWS permissions required by the automation |
 
 The role trusts the EC2 service:
-
-hcl
+```code
 Principal = {
   Service = "ec2.amazonaws.com"
 }
-
+```
 This allows EC2 to assume the role through AWS Security Token Service (STS).
-
-The role provides the AWS permissions required by the automation.
+| Permission | Purpose |
+|---|---|
+| `s3:PutObject` | Upload the Controller public SSH key to S3 |
+| `s3:GetObject` | Download the Controller public SSH key from S3 |
+| `s3:ListBucket` | Access/list the S3 bucket |
+| `ec2:DescribeInstances` | Retrieve EC2 instance information |
 
 IAM Policies
 
