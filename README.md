@@ -1,4 +1,4 @@
-Terraform + Ansible Automation on AWS
+## Terraform + Ansible Automation on AWS
 
 This repository demonstrates an end-to-end automation workflow using Terraform and Ansible on AWS.
 
@@ -301,63 +301,56 @@ Ansible Client
 ```
 The Controller also waits during its startup before looking up the Client information. The Client waits before downloading the Controller public SSH key.
 
-
+## IAM Role Access to S3
 
 The EC2 instances use their IAM role permissions to access the required S3 objects.
-
 Controller and Client Creation Order
-
 The Terraform configuration intentionally creates the Controller before the Client.
-
 The dependency is:
-
+```
 Ansible Controller
         |
         v
-90-second wait
+   90-second wait
         |
         v
 Ansible Client
+```
 
 The Controller also waits during its startup before looking up the Client information. The Client waits before downloading the Controller public SSH key.
-
 These delays provide a startup buffer so that the Controller has time to initialize and upload its public key before the Client attempts to retrieve it.
-
 Ansible Configuration
-
 The ansible.cfg file contains the Ansible configuration used by the Controller.
-
-ini
+```
 [defaults]
 private_key_file = /home/ansible-user/.ssh/id_rsa
 remote_user = ansible-user
 host_key_checking = False
-Setting	Purpose
-private_key_file	Specifies the SSH private key Ansible uses
-remote_user	Specifies the Linux user used for SSH
-host_key_checking	Controls SSH host-key verification prompts
+```
+| Setting | Purpose |
+|---|---|
+| `private_key_file` | Specifies the SSH private key Ansible uses |
+| `remote_user` | Specifies the Linux user used for SSH |
+| `host_key_checking` | Controls SSH host-key verification prompts |
+
 Ansible Inventory
-
 The inventory is located at:
-
+``` 
 ansible/inventories/inventory.ini
 
-The inventory contains the Ansible host groups.
-
-Example:
-
-ini
 [controller]
 ansible_controller ansible_host=<CONTROLLER_IP>
 
 [client]
 ansible_client ansible_host=<CLIENT_IP>
-Inventory Item	Purpose
-[controller]	Controller host group
-[client]	Client host group
-ansible_controller	Ansible inventory hostname
-ansible_client	Ansible inventory hostname
-ansible_host	Actual IP address used for the connection
+```
+| Inventory Item | Purpose |
+|---|---|
+| `[controller]` | Controller host group |
+| `[client]` | Client host group |
+| `ansible_controller` | Ansible inventory hostname |
+| `ansible_client` | Ansible inventory hostname |
+| `ansible_host` | Actual IP address used for the connection |
 
 The Controller startup script dynamically updates the inventory with the instance information obtained from AWS.
 
