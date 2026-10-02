@@ -1,5 +1,14 @@
 ## Terraform + Ansible Automation on AWS
 
+You can watch the video of implemntation or read the detailed blog
+Resources
+Blog
+Ansible Automation on AWS: Complete Setup, Nginx and QEMU Guest Agent
+https://medium.com/@tradingcontentdrive/ansible-automation-on-aws-complete-setup-nginx-and-qemu-guest-agent-b3b927f4057b
+
+## YouTube Video
+<iframe width="560" height="315" src="https://www.youtube.com/embed/LYo2yOQ6OI4" title="Terraform + Ansible Automation on AWS" frameborder="0" allowfullscreen></iframe>
+
 This repository demonstrates an end-to-end automation workflow using Terraform and Ansible on AWS.
 
 The project is designed to replicate a practical post-migration configuration scenario. The actual VMware-to-OpenShift Virtualization migration is outside the scope of this repository. Instead, AWS EC2 instances are used to reproduce the type of environment and configuration activities that may be required after a VM migration.
@@ -561,7 +570,7 @@ ansible-playbook -i ansible/inventories/inventory.ini ping.yaml
 A successful result confirms that the Controller can connect to the Client through Ansible.
 
 Complete Workflow
-
+```
 The complete project can be summarized as:
 
                   Terraform
@@ -589,21 +598,24 @@ The complete project can be summarized as:
                v
        Configuration
         Verification
-Why Terraform and Ansible Together?
+```
+## Why Terraform and Ansible Together?
 
 Terraform and Ansible solve different parts of the automation workflow.
 
-Terraform	Ansible
-Infrastructure as Code	Configuration Management
-Creates AWS resources	Configures existing servers
-Creates VPC and networking	Installs packages
-Creates IAM resources	Manages services
-Creates EC2 instances	Performs server configuration
-Defines infrastructure dependencies	Performs Day-2 operations
-Manages infrastructure state	Executes configuration tasks
+| Terraform | Ansible |
+|---|---|
+| Infrastructure as Code | Configuration Management |
+| Creates AWS resources | Configures existing servers |
+| Creates VPC and networking | Installs packages |
+| Creates IAM resources | Manages services |
+| Creates EC2 instances | Performs server configuration |
+| Defines infrastructure dependencies | Performs Day-2 operations |
+| Manages infrastructure state | Executes configuration tasks |
 
 The project therefore follows:
 
+```
 Terraform → Provision the infrastructure
 Ansible → Configure and manage the servers
 Main Technologies
@@ -620,26 +632,46 @@ Nginx	Server configuration example
 QEMU Guest Agent	Post-migration configuration example
 Linux	Operating system environment
 Security Note
+```
+The project therefore follows:
+```
+Terraform → Provision the infrastructure
+Ansible   → Configure and manage the servers
+```
+## Main Technologies
+| Technology | Role in the Project |
+|---|---|
+| AWS | Cloud infrastructure platform |
+| Terraform | Infrastructure provisioning |
+| Ansible | Server configuration and automation |
+| Amazon EC2 | Controller and Client instances |
+| Amazon VPC | Network environment |
+| IAM | AWS permissions |
+| Amazon S3 | SSH public-key transfer |
+| SSH | Controller-to-Client communication |
+| Nginx | Server configuration example |
+| QEMU Guest Agent | Post-migration configuration example |
+| Linux | Operating system environment |
 
+Security Note
 The repository contains:
-
+```
 testing-dev-1.pem
+```
 
 A private SSH key should not be committed to a public Git repository.
 
 For a production or publicly shared repository, use an appropriate secret-management approach and keep private credentials outside version control.
 
 Related Blog
-
 The detailed explanation and walkthrough for this project are available here:
-
 Ansible Automation on AWS: Complete Setup, Nginx and QEMU Guest Agent
-
 Further Learning
-Ansible Automation Platform on OpenShift
-Executing Ansible Jobs using AAP on OpenShift
-Ansible Tower / AWX on Kubernetes
-Disclaimer
+- Ansible Automation Platform on OpenShift
+- Executing Ansible Jobs using AAP on OpenShift
+- Ansible Tower / AWX on Kubernetes
+
+  
 
 This repository is a demonstration and learning environment.
 
